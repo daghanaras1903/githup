@@ -1,21 +1,33 @@
-print("Sözlüğe hoş geldiniz!")
-meme_dict = {
-    "CRINGE": "Garip ya da utandırıcı bir şey",
-    "LOL": "Komik bir şeye verilen cevap",
-    "CREEPY": "Korkunç",
-    "ROFL": "Bir şakaya karşılık cevap",
-    "AGGRO": "Agresifleşmek/sinirlenmek",
-}
-word = input("Anlamadığınız bir kelime yazın (hepsini büyük harflerle yazın!): ")
-if word in meme_dict:
-    print(meme_dict[word])
-else:
-    print("Böyle bir kelime bulunamadı!")
-while True:
-    print("Ama dur! İstersen sen de kelime ekle.")
-    new_word = input("Buraya yazabilirsin: ")
-    print("Bu kelimenin anlamı ne?")
-    meaning = input("Bu kelimenin anlamı: ")
-    meme_dict[new_word.upper()] = meaning
-    print(f"{new_word} sözlüğe eklendi.")
-    input
+import discord
+from discord.ext import commands
+import random
+
+
+class MyContext(commands.Context):
+    async def tick(self, value):
+        emoji = '\N{WHITE HEAVY CHECK MARK}' if value else '\N{CROSS MARK}'
+        try:
+            await self.message.add_reaction(emoji)
+        except discord.HTTPException:
+            pass
+
+
+class MyBot(commands.Bot):
+    async def get_context(self, message, *, cls=MyContext):
+        return await super().get_context(message, cls=cls)
+
+
+intents = discord.Intents.default()
+intents.message_content = True
+
+bot = MyBot(command_prefix='!', intents=intents)
+
+
+@bot.command()
+async def guess(ctx, number: int):
+    """Guess a random number from 1 to 6."""
+    value = random.randint(1, 6)
+    await ctx.tick(number == value)
+
+token = "your token here"
+bot.run(token)
